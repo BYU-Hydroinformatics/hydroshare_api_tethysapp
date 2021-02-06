@@ -2247,9 +2247,6 @@ def download_resource(request):
             # pass in request object
             hs = get_oauth_hs(request)
 
-        # your logic goes here. For example: list all HydroShare resources
-            # for resource in hs.getResourceList():
-            #     print(resource)
 
         except Exception as e:
     # handle exceptions
@@ -2267,17 +2264,9 @@ def download_resource(request):
                 hs = HydroShare(auth=auth)
 
         if not has_errors:
-            # Do stuff here
-            # auth = HydroShareAuthBasic(username= username, password= password)
-            # hs = HydroShare(auth=auth)
+            
             fpath='/tmp/%s.zip' % title
             hs.getResource(title, destination='/tmp')
-            # response = HttpResponse( content_type='application/force-download')
-            # response['Content-Disposition'] = 'attachment; filename=%s.zip' % smart_str(title)
-            # response['X-Sendfile'] = smart_str('/tmp')
-            # response['Content-Length'] = os.path.getsize(fpath)
-            # print(os.path.getsize(fpath))
-
             wrapper = FileWrapper(open(os.path.abspath(fpath), 'rb')) 
             response = HttpResponse(wrapper, content_type='text/plain') 
             response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(fpath) 
