@@ -1981,7 +1981,7 @@ def metadata(request):
 
     detail1_input = DatePicker(
         name='detail1',
-        display_text='Date Built',
+        display_text='Start date',
         autoclose=True,
         format='MM d, yyyy',
         start_view='decade',
@@ -1992,7 +1992,7 @@ def metadata(request):
 
     detail2_input = DatePicker(
         name='detail2',
-        display_text='Date Built',
+        display_text='End date',
         autoclose=True,
         format='MM d, yyyy',
         start_view='decade',
