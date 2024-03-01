@@ -7,7 +7,7 @@ class HydrosharePython(TethysAppBase):
     """
 
     name = 'HydroShare Python API Demonstration'
-    index = 'hydroshare_python:home'
+    index = 'home'
     icon = 'hydroshare_python/images/icon.gif'
     package = 'hydroshare_python'
     root_url = 'hydroshare-python'
