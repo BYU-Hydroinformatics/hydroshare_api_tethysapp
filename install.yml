@@ -1,5 +1,5 @@
 version: 1.0
-name: hydroshare_api_tethysapp
+name: hydroshare_python
 
 requirements:
   skip: false
