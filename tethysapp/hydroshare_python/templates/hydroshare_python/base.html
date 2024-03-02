@@ -43,7 +43,7 @@
 
   {% url 'hydroshare_python:get_file' as get_file_url %}
   <li class="nav-item {% if request.path == get_file_url %}active{% endif %}">
-    <a class="nav-link {% if request.path == get_file_url %}active{% endif %}" href="{{ get_file_url }}">Create a Resource</a>
+    <a class="nav-link {% if request.path == get_file_url %}active{% endif %}" href="{{ get_file_url }}">Create a CompositeResource Resource</a>
   </li>
 
   {% url 'hydroshare_python:viewer' as viewer_url %}

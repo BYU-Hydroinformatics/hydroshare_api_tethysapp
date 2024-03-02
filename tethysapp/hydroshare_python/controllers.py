@@ -793,7 +793,10 @@ def geoserver(request):
         "resourcev": resourcev,
     }
 
-    return render(request, "hydroshare_python/geoserver.html", context)
+    return redirect(request, "hydroshare_python/geoserver.html", context)
+
+
+# def create_regions():
 
 
 @controller
@@ -806,7 +809,6 @@ def get_file(request):
     owner = "Reclamation"
     username = ""
     password = ""
-    # river = ''
     date_built = ""
     author = ""
 
@@ -819,16 +821,11 @@ def get_file(request):
     date_error = ""
     author_error = ""
     loggedin = False
-    try:
-        # pass in request object
-        hs = get_oauth_hs(request)
-        loggedin = True
-
-    except Exception as e:
-        pass
+    # breakpoint()
 
     # Handle form submission
     if request.POST and "create-button" in request.POST:
+        print(request.POST)
         # Get values
         has_errors = False
         username = request.POST.get("username", None)
@@ -901,7 +898,7 @@ def get_file(request):
                 # hs = HydroShare(auth=auth)
                 abstract = date_built
                 keywords = owner.split(", ")
-                rtype = "GenericResource"
+                rtype = "CompositeResource"
                 fpath = temp_zip_path  # fpath = 'tethysapp/geocode/workspaces/app_workspace/output.txt'
                 metadata = (
                     '[{"coverage":{"type":"period", "value":{"start":"01/01/2000", "end":"12/12/2010"}}}, '
@@ -909,16 +906,22 @@ def get_file(request):
                     + "]"
                 )
                 extra_metadata = '{"key-1": "value-1", "key-2": "value-2"}'
-                resource_id = hs.createResource(
-                    rtype,
-                    title,
-                    resource_file=fpath,
-                    keywords=keywords,
-                    abstract=abstract,
-                    metadata=metadata,
-                    extra_metadata=extra_metadata,
-                )
-                messages.success(request, "Resource created successfully")
+                # breakpoint()
+                try:
+
+                    hs.createResource(
+                        rtype,
+                        title,
+                        resource_file=fpath,
+                        keywords=keywords,
+                        abstract=abstract,
+                        metadata=metadata,
+                        extra_metadata=extra_metadata,
+                    )
+                    messages.success(request, "Resource created successfully")
+
+                except Exception as e:
+                    messages.error(request, f"{e}")
                 # return {"status": success }
             if has_errors:
                 # Utah Municipal resource id
@@ -948,12 +951,6 @@ def get_file(request):
         placeholder="Enter your password",
     )
 
-    # river_input = TextInput(
-    #     display_text='Name of Creator',
-    #     name='river',
-    #     placeholder='e.g: John Smith'
-    # )
-
     date_built = TextInput(
         display_text="Abstract",
         name="date-built",
@@ -971,7 +968,7 @@ def get_file(request):
         name="create-button",
         icon="bi-plus",
         style="success",
-        attributes={"form": "add-dam-form"},
+        attributes={"form": "add-resource-form"},
         submit=True,
     )
 
@@ -980,7 +977,6 @@ def get_file(request):
         name="cancel-button",
         href=reverse("hydroshare_python:home"),
     )
-
     context = {
         "loggedin": loggedin,
         "title_input": title_input,
@@ -992,6 +988,7 @@ def get_file(request):
         "create_button": create_button,
         "cancel_button": cancel_button,
     }
+    print(context)
 
     return render(request, "hydroshare_python/get_file.html", context)
 
@@ -2045,7 +2042,6 @@ def viewer(request):
 
     username = ""
     password = ""
-    resourcev = []
     viewr = ""
 
     # Errors
@@ -2062,8 +2058,7 @@ def viewer(request):
         pass
 
     # Handle form submission
-    print("POST REQUEST RECEIVED")
-    if request.POST and not "add-button" in request.POST:
+    if request.POST and not "fetch_button" in request.POST:
         print("POST REQUEST STARTED")
         # Get values
         has_errors = False
@@ -2077,7 +2072,6 @@ def viewer(request):
         if not viewr:
             has_errors = True
             viewr_error = "Subject is required."
-
         try:
             # pass in request object
             hs = get_oauth_hs(request)
@@ -2092,14 +2086,13 @@ def viewer(request):
             if not username:
                 has_errors = True
                 username_error = "Username is required."
-
-            elif not password:
+                messages.error(request, username_error)
+            if not password:
                 has_errors = True
                 password_error = "Password is required."
 
-            else:
-                auth = HydroShareAuthBasic(username=username, password=password)
-                hs = HydroShare(auth=auth)
+            auth = HydroShareAuthBasic(username=username, password=password)
+            hs = HydroShare(auth=auth)
 
         if not has_errors:
             # Do stuff here
@@ -2111,19 +2104,23 @@ def viewer(request):
                 resourceList.append(resource)
 
             return HttpResponse(json.dumps(resourceList))
-            # return {"status": success }
+
         if has_errors:
-            # Utah Municipal resource id
+            print("hey")
             messages.error(request, "Please fix errors.")
 
-    # Define form gizmos
-
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     viewr_input = TextInput(
-        display_text="Subject", name="viewr", placeholder="Enter your subject"
+        display_text="Subject",
+        name="viewr",
+        placeholder="Enter your subject",
+        error=viewr_error,
     )
 
     password_input = TextInput(
@@ -2131,21 +2128,7 @@ def viewer(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
-    )
-
-    # river_input = TextInput(
-    #     display_text='Name of Creator',
-    #     name='river',
-    #     placeholder='e.g: John Smith'
-    # )
-
-    add_button = Button(
-        display_text="Add",
-        name="add-button",
-        icon="bi-plus",
-        style="success",
-        attributes={"form": "add-dam-form"},
-        submit=True,
+        error=password_error,
     )
 
     cancel_button = Button(
@@ -2159,9 +2142,7 @@ def viewer(request):
         "username_input": username_input,
         "password_input": password_input,
         "viewr_input": viewr_input,
-        "add_button": add_button,
         "cancel_button": cancel_button,
-        "resourcev": resourcev,
     }
 
     return render(request, "hydroshare_python/find_resource.html", context)

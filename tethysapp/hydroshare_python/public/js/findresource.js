@@ -16,14 +16,17 @@ button.addEventListener('click', async function () {
     document.body.classList.add('waiting');
     let responseData;
     try{
-    const response = await fetch('/apps/hydroshare-python/viewer/', {
-        method: 'post',
-        body: formData
-    });
-
-    responseData = await response.json()
-    } catch{
-
+        const response = await fetch('.', {
+            method: 'post',
+            body: formData
+        });
+        console.log(response)
+        
+        responseData = await response.json()
+        console.log(responseData)
+    } catch(e){
+        return
+    
     }finally{
         document.body.classList.remove('waiting');
     }

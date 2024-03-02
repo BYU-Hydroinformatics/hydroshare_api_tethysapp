@@ -14,7 +14,7 @@ button.addEventListener('click', async function () {
     formData.append('resourcein', resourceid.value);
     formData.append('csrfmiddlewaretoken', csrfToken.value);
 
-    const response = await fetch('/apps/hydroshare-python/filev/', {
+    const response = await fetch('.', {
         method: 'post',
         body: formData
     });

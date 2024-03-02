@@ -4,9 +4,10 @@
 
 {% block app_content %}
   <h1 style="color:rgb(16, 73, 14)">Create a Resource</h1>
-  <p>The ‘Create a Resource’ feature allows the user to create a new resource in their HydroShare account, which would contain all files they intend to upload. The resources in the user’s HydroShare account are created with a certain amount of prerequisites like author name, keywords, metadata and the title of your resource. The Python API provided by HydroShare helps in completing this task. Below are step by step instructions on how to create a new resource.  </p>
+  <p>The ‘Create a CompositeResource Resource’ feature allows the user to create a new CompositeResource resource in their HydroShare account, which would contain all files they intend to upload. The resources in the user’s HydroShare account are created with a certain amount of prerequisites like author name, keywords, metadata and the title of your resource. The Python API provided by HydroShare helps in completing this task. Below are step by step instructions on how to create a new resource.  </p>
   <p></p>
-  <form id="add-dam-form" method="post" enctype="multipart/form-data">
+  
+  <form id="add-resource-form" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <p>The way you could go about performing this function is by following the instructions below:</p>
     <h3>Step 1: Sign into HydroShare using your credentials</h3>
@@ -39,7 +40,6 @@
 
     <input id="uploaded-file" type="file" name="uploadedfile"/>
     <p></p>
-    {% gizmo create_button %}
     
 
   </form>
@@ -49,27 +49,27 @@
   <p>To try this on your own, you can use the code snippet below that is used in this demonstration.</p>
   <pre style="white-space: pre-wrap;">
     <code class="language-python">
-<mark>from hs_restclient import HydroShare, HydroShareAuthBasic</mark>
-auth = HydroShareAuthBasic(username= 'username', password= 'password')
-hs = HydroShare(auth=auth)
-abstract = date_built
-keywords = owner.split(', ')
-rtype = 'GenericResource'
-fpath = '/path/to/a/file'
-metadata = '[{"coverage":{"type":"period", "value":{"start":"01/01/2000", "end":"12/12/2010"}}}, {"creator":{"name":"Username"}}, {"creator":{"name":"Username2"}}]'
-extra_metadata = '{"key-1": "value-1", "key-2": "value-2"}'
-resource_id = hs.createResource(rtype, title, resource_file=fpath, keywords=keywords, abstract=abstract, metadata=metadata, extra_metadata=extra_metadata)
-messages.error(request, "Resource created successfully")
-if has_errors:    
-messages.error(request, "Please fix errors.")
-
+        <mark>from hs_restclient import HydroShare, HydroShareAuthBasic</mark>
+        auth = HydroShareAuthBasic(username= 'username', password= 'password')
+        hs = HydroShare(auth=auth)
+        abstract = date_built
+        keywords = owner.split(', ')
+        rtype = 'CompositeResource'
+        fpath = '/path/to/a/file'
+        metadata = '[{"coverage":{"type":"period", "value":{"start":"01/01/2000", "end":"12/12/2010"}}}, {"creator":{"name":"Username"}}, {"creator":{"name":"Username2"}}]'
+        extra_metadata = '{"key-1": "value-1", "key-2": "value-2"}'
+        resource_id = hs.createResource(rtype, title, resource_file=fpath, keywords=keywords, abstract=abstract, metadata=metadata, extra_metadata=extra_metadata)
+        messages.error(request, "Resource created successfully")
+        if has_errors:    
+        messages.error(request, "Please fix errors.")
     </code>
   </pre>
   <p></p>
- <p></p>
 {% endblock %}
 
 {% block app_actions %}
+  {% gizmo create_button %}
+
   {% gizmo cancel_button %}
   
 {% endblock %}

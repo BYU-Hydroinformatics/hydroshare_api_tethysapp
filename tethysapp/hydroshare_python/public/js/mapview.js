@@ -27,7 +27,7 @@ button.addEventListener('click', async function () {
     formData.append('viewr', viewr.value);
     formData.append('csrfmiddlewaretoken', csrfToken.value);
 
-    const response = await fetch('/apps/hydroshare-python/mapview/', {
+    const response = await fetch('.', {
         method: 'post',
         body: formData
     });
@@ -74,12 +74,20 @@ viewbutton.addEventListener('click', function(event){
     const selectedid = fileSelector.value
     const resource = resourceslist.find(resource=>resource.resource_id==selectedid)
     if(resource){
-        console.log("Map works")
+        
+        mymap.eachLayer(function (layer) {
+            console.log(layer)
+            if(!layer._url){
+                mymap.removeLayer(layer);
+
+            }
+        });
+        
         const box = resource.coverages.find(coveragesItem=>coveragesItem.type=="box")
         var bounds = [[box.value.northlimit, box.value.westlimit], [box.value.southlimit, box.value.eastlimit]];
-// create an orange rectangle
+        // create an orange rectangle
         L.rectangle(bounds, {color: "#ff7800", weight: 3}).addTo(mymap);
-// zoom the map to the rectangle bounds
+        // zoom the map to the rectangle bounds
         mymap.fitBounds(bounds);
     }
 })
