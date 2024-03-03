@@ -2621,12 +2621,7 @@ def change_public(request):
             # pass in request object
             hs = get_oauth_hs(request)
 
-        # your logic goes here. For example: list all HydroShare resources
-        # for resource in hs.getResourceList():
-        #     print(resource)
-
         except Exception as e:
-            # handle exceptions
 
             if not username:
                 has_errors = True
@@ -2642,14 +2637,20 @@ def change_public(request):
 
         if not has_errors:
             # Do stuff here
-            # auth = HydroShareAuthBasic(username= username, password= password)
-            # hs = HydroShare(auth=auth)
-            hs.setAccessRules(title, public=True)
-            messages.success(request, "Resource is now public")
-            # hs.setAccessRules(public=True)
-
+            try:
+                hs.setAccessRules(title, public=True)
+                messages.success(request, "Resource is now public")
+            except HydroShareNotAuthorized as e:
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+            except HydroShareHTTPException as e:
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
         if has_errors:
-            # Utah Municipal resource id
             messages.error(request, "Please fix errors.")
 
     # Define form gizmos
@@ -2657,10 +2658,14 @@ def change_public(request):
         display_text="Enter your resource ID of the Resource",
         name="title",
         placeholder="Ex: decbdccf486d4df4b1d18031a4e63aa3",
+        error=title_error,
     )
 
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -2668,13 +2673,8 @@ def change_public(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
-
-    # river_input = TextInput(
-    #     display_text='Name of Creator',
-    #     name='river',
-    #     placeholder='e.g: John Smith'
-    # )
 
     public_button = Button(
         display_text="Change to Public",
