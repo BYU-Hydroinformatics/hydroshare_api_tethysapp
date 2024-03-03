@@ -1,3 +1,11 @@
+var pureCoverage = false;
+var format = 'image/png';
+var supportsFiltering = true;
+var map = null;
+var bounds = null
+var untiled = null;
+var tiled = null;
+
 // sets the chosen WMS version
 function setWMSVersion(wmsVersion) {
   map.getLayers().forEach(function(lyr) {
@@ -120,16 +128,17 @@ function updateFilter(){
   }
 
   function initMap(bb1, bb2, bb3, bb4, resourceid, title) {
-    var pureCoverage = false;
-    var format = 'image/png';
-    var bounds = [bb4, bb1, bb2, bb3];
+    pureCoverage = false;
+    format = 'image/png';
+    
+    bounds = [bb4, bb1, bb2, bb3];
     if (pureCoverage) {
       document.getElementById('antialiasSelector').disabled = true;
       document.getElementById('jpeg').selected = true;
       format = "image/jpeg";
     }
   
-    var supportsFiltering = true;
+    supportsFiltering = true;
     if (!supportsFiltering) {
       document.getElementById('filterType').disabled = true;
       document.getElementById('filter').disabled = true;
@@ -144,7 +153,7 @@ function updateFilter(){
       undefinedHTML: '&nbsp;'
     });
   
-    var untiled = new ol.layer.Image({
+    untiled = new ol.layer.Image({
       source: new ol.source.ImageWMS({
         ratio: 1,
         url: `https://geoserver.hydroshare.org/geoserver/${resourceid}/wms`,
@@ -157,7 +166,7 @@ function updateFilter(){
       })
     });
   
-    var tiled = new ol.layer.Tile({
+    tiled = new ol.layer.Tile({
       visible: false,
       source: new ol.source.TileWMS({
         url: `https://geoserver.hydroshare.org/geoserver/${resourceid}/wms`,
@@ -179,7 +188,7 @@ function updateFilter(){
       global: true
     });
   
-    var map = new ol.Map({
+    map = new ol.Map({
       controls: ol.control.defaults({
         attribution: false
       }).extend([mousePositionControl]),
@@ -228,7 +237,11 @@ function updateFilter(){
   }
   
   function destroyMap() {
-  
+    map = null;
+    bounds = null;
+    tiled = null;
+    untiled = null;
+    document.getElementById('wrapper-map').style.display = 'none'
     const mapElement = document.getElementById('map')
     if (mapElement) {
       mapElement.innerHTML = ''; // This removes all child elements
@@ -313,11 +326,6 @@ viewbutton.addEventListener('click', async function(event){
         // please convert to vanilla js the following
         const random_url = document.getElementById('random-url').getAttribute("data-url");
         console.log(random_url)
-        // const url = './random/?id='+selectedid
-        const iframe = document.querySelector('.iframe');
-        const loading_url = document.getElementById('loading-url').getAttribute("data-url");
-
-
         const response = await fetch(`${random_url}?id=${selectedid}`, {
             method: 'get'
         });
@@ -325,6 +333,7 @@ viewbutton.addEventListener('click', async function(event){
         
         let responseData = await response.json()
         destroyMap()
+        document.getElementById('wrapper-map').style.display = 'block'
         initMap(responseData.bb1, responseData.bb2, responseData.bb3, responseData.bb4, responseData.resourceid, responseData.title)
         console.log(responseData)
 

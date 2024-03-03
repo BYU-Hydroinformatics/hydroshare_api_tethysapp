@@ -348,9 +348,7 @@ def mapview(request):
         # handle exceptions
 
     # Handle form submission
-    print("POST REQUEST RECEIVED")
     if request.POST and not "add-button" in request.POST:
-        print("POST REQUEST STARTED")
         # Get values
         has_errors = False
         username = request.POST.get("username", None)
@@ -366,12 +364,7 @@ def mapview(request):
             # pass in request object
             hs = get_oauth_hs(request)
 
-            # # your logic goes here. For example: list all HydroShare resources
-            # for resource in hs.getResourceList():
-            #     print(resource)
-
         except Exception as e:
-            # handle exceptions
 
             if not username:
                 has_errors = True
@@ -386,23 +379,35 @@ def mapview(request):
                 hs = HydroShare(auth=auth)
 
         if not has_errors:
-            # Do stuff here
-            # hs.setAccessRules(public=True)
-            result = hs.resources(subject=viewr)
+            try:
+                result = hs.resources(subject=viewr)
 
-            resourceList = []
-            for resource in result:
-                resourceList.append(resource)
+                resourceList = []
+                for resource in result:
+                    resourceList.append(resource)
 
-            return HttpResponse(json.dumps(resourceList))
-            # return {"status": success }
+                return HttpResponse(json.dumps(resourceList))
+            except HydroShareNotAuthorized as e:
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+
+            # authetication is invalid
+            except HydroShareHTTPException as e:
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
 
         if has_errors:
-            # Utah Municipal resource id
             messages.error(request, "Please fix errors.")
 
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -410,10 +415,14 @@ def mapview(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
 
     viewr_input = TextInput(
-        display_text="Subject", name="viewr", placeholder="Enter your subject"
+        display_text="Subject",
+        name="viewr",
+        placeholder="Enter your subject",
+        error=viewr_error,
     )
 
     add_button = Button(
@@ -2124,15 +2133,17 @@ def viewer(request):
                     request,
                     f"{e}",
                 )
-
+                # return redirect("hydroshare_python:viewer")
             # authetication is invalid
             except HydroShareHTTPException as e:
                 messages.error(
                     request,
                     f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
                 )
+                # return redirect("hydroshare_python:viewer")
 
         if has_errors:
+            print("hey")
             messages.error(request, "Please fix errors.")
 
     username_input = TextInput(
