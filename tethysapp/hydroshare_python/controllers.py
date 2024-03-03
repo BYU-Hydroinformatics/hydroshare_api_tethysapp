@@ -5,7 +5,7 @@ from tethys_sdk.gizmos import TextInput, DatePicker
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 from django.shortcuts import redirect, reverse
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from hs_restclient import HydroShare, HydroShareAuthBasic
 from wsgiref.util import FileWrapper
 import os
@@ -14,6 +14,8 @@ import zipfile
 import json
 from django.core import serializers
 from tethys_sdk.routing import controller
+import requests
+import base64
 
 
 @controller
@@ -91,6 +93,18 @@ def home(request):
 @controller
 def loading(request):
     return render(request, "hydroshare_python/loading.html")
+
+
+@controller
+def loading_geoserver_table(request):
+    response_object = {}
+    url = request.GET.get("url")
+    # base64.b64decode
+
+    response = requests.get(base64.b64decode(url).decode("ascii"))
+    # breakpoint()
+    response_object['content'] = response.content.decode("utf-8")
+    return JsonResponse(response_object)
 
 
 @controller
@@ -603,7 +617,7 @@ def random(request):
     except:
         title = " "
 
-    context = {
+    reponse_obj = {
         "bb1": bb1,
         "bb2": bb2,
         "bb3": bb3,
@@ -611,8 +625,10 @@ def random(request):
         "resourceid": resourceid,
         "title": title,
     }
+    # print(context)
 
-    return render(request, "hydroshare_python/random.html", context)
+    # return render(request, "hydroshare_python/random.html", context)
+    return JsonResponse(reponse_obj)
 
 
 @controller

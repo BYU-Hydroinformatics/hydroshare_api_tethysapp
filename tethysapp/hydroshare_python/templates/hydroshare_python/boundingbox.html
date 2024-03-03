@@ -45,10 +45,14 @@
     {% gizmo cancel_button %}
     <p></p>
   </form>
-<iframe src='' class='iframe' width="900px" height="800px"></iframe>
-  <script>
-    
-  </script>
+
+
+  <input type="hidden" id="random-url" data-url="{% url 'hydroshare_python:random' %}" />
+  <input type="hidden" id="loading-url" data-url="{% url 'hydroshare_python:loading' %}" />
+  <input type="hidden" id="loading-geserver-table-url" data-url="{% url 'hydroshare_python:loading_geoserver_table' %}" />
+  
+  {% include "hydroshare_python/random.html" %}
+
   
 {% endblock %}
 
