@@ -58,12 +58,12 @@
 
   {% url 'hydroshare_python:boundingbox' as boundingbox_url %}
   <li class="nav-item {% if request.path == boundingbox_url %}active{% endif %}">
-    <a class="nav-link {% if request.path == boundingbox_url %}active{% endif %}" href="{{ boundingbox_url }}">Geoserver - View a Resource</a>
+    <a class="nav-link {% if request.path == boundingbox_url %}active{% endif %}" href="{{ boundingbox_url }}">OpenLayers Geoserver - View a Resource</a>
   </li>
 
   {% url 'hydroshare_python:metadata' as metadata_url %}
   <li class="nav-item {% if request.path == metadata_url %}active{% endif %}">
-    <a class="nav-link {% if request.path == metadata_url %}active{% endif %}" href="{{ metadata_url }}">Metadata</a>
+    <a class="nav-link {% if request.path == metadata_url %}active{% endif %}" href="{{ metadata_url }}">Update Metadata</a>
   </li>
 
   {% url 'hydroshare_python:getfile_metadata' as getfile_metadata_url %}

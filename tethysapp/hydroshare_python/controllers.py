@@ -7,6 +7,7 @@ from django.shortcuts import redirect, reverse
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from hs_restclient import HydroShare, HydroShareAuthBasic
+from hs_restclient.exceptions import HydroShareNotAuthorized, HydroShareHTTPException
 from wsgiref.util import FileWrapper
 import os
 import tempfile
@@ -103,7 +104,7 @@ def loading_geoserver_table(request):
 
     response = requests.get(base64.b64decode(url).decode("ascii"))
     # breakpoint()
-    response_object['content'] = response.content.decode("utf-8")
+    response_object["content"] = response.content.decode("utf-8")
     return JsonResponse(response_object)
 
 
@@ -1773,11 +1774,7 @@ def metadata(request):
     Phone = ""
     detail1 = ""
     detail2 = ""
-    # filename = ''
     resourcein = ""
-    # owner = 'Reclamation'
-    # river = ''
-    # date_built = ''
 
     # Errors
     username_error = ""
@@ -1800,9 +1797,6 @@ def metadata(request):
 
     except Exception as e:
         pass
-    # owner_error = ''
-    # river_error = ''
-    # date_error = ''
 
     # Handle form submission
     if request.POST and "add-button" in request.POST:
@@ -1825,19 +1819,13 @@ def metadata(request):
         # Validate
         if not creator1:
             has_errors = True
-            password_error = "creator1 is required."
+            creator1_error = "creator1 is required."
 
         try:
             # pass in request object
             hs = get_oauth_hs(request)
 
-        # your logic goes here. For example: list all HydroShare resources
-        # for resource in hs.getResourceList():
-        #     print(resource)
-
         except Exception as e:
-            # handle exceptions
-
             if not username:
                 has_errors = True
                 username_error = "Username is required."
@@ -1848,7 +1836,11 @@ def metadata(request):
 
             else:
                 auth = HydroShareAuthBasic(username=username, password=password)
-                hs = HydroShare(auth=auth)
+                try:
+                    hs = HydroShare(auth=auth)
+                except Exception as e:
+                    has_errors = True
+                    messages.error(request, f"{e}")
 
         if not organization:
             has_errors = True
@@ -1856,39 +1848,29 @@ def metadata(request):
 
         if not Email:
             has_errors = True
-            password_error = "Email is required."
+            Email_error = "Email is required."
 
         if not Address:
             has_errors = True
-            password_error = "Address is required."
+            Address_error = "Address is required."
 
         if not Phone:
             has_errors = True
-            password_error = "Phone is required."
+            Phone_error = "Phone is required."
 
         if not detail1:
             has_errors = True
-            password_error = "detail1 is required."
+            detail1_error = "detail1 is required."
 
         if not detail2:
             has_errors = True
-            password_error = "detail2 is required."
+            detail2_error = "detail2 is required."
 
         if not resourcein:
             has_errors = True
             resourcein_error = "Resource is required."
 
-        # if not filename:
-        #     has_errors = True
-        #     filename_error = 'Filename is required.'
-
         if not has_errors:
-            # Do stuff here
-            # title = title
-            # filename = filename
-            # auth = HydroShareAuthBasic(username= username, password= password)
-            # hs = HydroShare(auth=auth)
-            print(creator1)
             metadata = {
                 "coverages": [
                     {"type": "period", "value": {"start": detail1, "end": detail2}}
@@ -1907,11 +1889,23 @@ def metadata(request):
             for i, author in enumerate(coauthor):
                 metadata["creators"].append({"name": author.strip()})
 
-            print(metadata)
-            science_metadata_json = hs.updateScienceMetadata(
-                resourcein, metadata=metadata
-            )
-            messages.success(request, "Metadata added successfully")
+            try:
+                hs.updateScienceMetadata(resourcein, metadata=metadata)
+                messages.success(request, "Metadata added successfully")
+
+            # resource id is invalid
+            except HydroShareNotAuthorized as e:
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+            # authetication is invalid
+            except HydroShareHTTPException as e:
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
+
         if has_errors:
             messages.error(request, "Please fix errors.")
 
@@ -1920,10 +1914,14 @@ def metadata(request):
         display_text="Resource ID",
         name="resourcein",
         placeholder="Enter id here eg: 08c6e88adaa647cd9bb28e5d619178e0 ",
+        error=resourcein_error,
     )
 
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -1931,36 +1929,49 @@ def metadata(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
 
     creator1_input = TextInput(
         display_text="Author(s) and/ or Chief Contributor(s)",
         name="creator1",
         placeholder="Enter the name of the Author(s) and/ or Chief Contributor(s)",
+        error=creator1_error,
     )
 
     creator2_input = TextInput(
         display_text="Co-authors",
         name="creator2",
         placeholder="Enter the name of other contributors to the resource",
+        error=creator2_error,
     )
 
     organization_input = TextInput(
         display_text="Organization",
         name="organization",
         placeholder="Enter your organization",
+        error=organization_error,
     )
 
     Email_input = TextInput(
-        display_text="Email", name="Email", placeholder="Enter your Email"
+        display_text="Email",
+        name="Email",
+        placeholder="Enter your Email",
+        error=Email_error,
     )
 
     Address_input = TextInput(
-        display_text="Address", name="Address", placeholder="Enter your Address"
+        display_text="Address",
+        name="Address",
+        placeholder="Enter your Address",
+        error=Address_error,
     )
 
     Phone_input = TextInput(
-        display_text="Phone", name="Phone", placeholder="Enter your Phone"
+        display_text="Phone",
+        name="Phone",
+        placeholder="Enter your Phone",
+        error=Phone_error,
     )
 
     detail1_input = DatePicker(
@@ -1984,31 +1995,6 @@ def metadata(request):
         initial=detail2,
         error=detail2_error,
     )
-
-    # filename_input = TextInput(
-    #     display_text='File name',
-    #     name='title',
-    #     placeholder='Enter the name of file here '
-    # )
-
-    # owner_input = TextInput(
-    #     display_text='Keywords',
-    #     name='owner',
-    #     placeholder='eg: shapefiles, datasets, etc..'
-    # )
-
-    # river_input = TextInput(
-    #     display_text='Name of Creator',
-    #     name='river',
-    #     placeholder='e.g: John Smith'
-    # )
-
-    # date_built = TextInput(
-    #     display_text='Keywords',
-    #     name='date-built',
-    #     placeholder='e.g: Shapefiles, datasets, etc..'
-
-    # )
 
     add_button = Button(
         display_text="Submit",
@@ -2038,10 +2024,6 @@ def metadata(request):
         "Phone_input": Phone_input,
         "detail1_input": detail1_input,
         "detail2_input": detail2_input,
-        # 'filename_input': filename_input,
-        # 'owner_input': owner_input,
-        # 'river_input': river_input,
-        # 'date_built_input': date_built,
         "add_button": add_button,
         "cancel_button": cancel_button,
     }
