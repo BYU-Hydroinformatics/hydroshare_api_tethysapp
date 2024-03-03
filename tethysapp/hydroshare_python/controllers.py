@@ -1026,7 +1026,6 @@ def add_file(request):
     resourcein_error = ""
     loggedin = False
     try:
-        # pass in request object
         hs = get_oauth_hs(request)
         loggedin = True
 
@@ -1057,11 +1056,6 @@ def add_file(request):
             try:
                 # pass in request object
                 hs = get_oauth_hs(request)
-
-                # your logic goes here. For example: list all HydroShare resources
-                # for resource in hs.getResourceList():
-                #     print(resource)
-
             except Exception as e:
                 # handle exceptions
                 if not username:
@@ -1082,8 +1076,23 @@ def add_file(request):
 
             if not has_errors:
                 fpath = temp_zip_path
-                resource_id = hs.addResourceFile(resourcein, fpath)
-                messages.success(request, "File added successfully")
+                try:
+                    hs.addResourceFile(resourcein, fpath)
+                    messages.success(request, "File added successfully")
+                # resource id is invalid
+                except HydroShareNotAuthorized as e:
+                    messages.error(
+                        request,
+                        f"{e}",
+                    )
+
+                # authetication is invalid
+                except HydroShareHTTPException as e:
+                    messages.error(
+                        request,
+                        f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    )
+
             if has_errors:
                 messages.error(request, "Please fix errors.")
 
@@ -1092,10 +1101,14 @@ def add_file(request):
         display_text="Resource ID",
         name="resourcein",
         placeholder="Enter id here eg: 08c6e88adaa647cd9bb28e5d619178e0 ",
+        error=resourcein_error,
     )
 
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -1103,6 +1116,7 @@ def add_file(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
 
     add_button = Button(
@@ -1291,30 +1305,24 @@ def filev(request):
                         request,
                         f"No Files found for the resource id: {resourcein}",
                     )
-                    return redirect("hydroshare_python:getfile_metadata")
                 else:
                     return HttpResponse(resourcefiles.content)
 
             # resource id is invalid
             except HydroShareNotAuthorized as e:
-                print("here")
                 messages.error(
                     request,
                     f"{e}",
                 )
-                return redirect("hydroshare_python:getfile_metadata")
 
             # authetication is invalid
             except HydroShareHTTPException as e:
-                print("here22")
-
                 messages.error(
                     request,
                     f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
                 )
-                return redirect("hydroshare_python:getfile_metadata")
 
-        # return HttpResponse("")
+        return HttpResponse("")
 
 
 @controller
