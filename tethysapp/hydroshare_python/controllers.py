@@ -1262,67 +1262,59 @@ def filev(request):
     Controller for the Add Dam page.
     """
     # Default Values
-    # filename = ''
     username = ""
     password = ""
     resourcein = ""
-    # owner = 'Reclamation'
-    # river = ''
-    # date_built = ''
-
-    # Errors
-    title_error = ""
-    # filename_error = ''
-    resourcein_error = ""
-    username_error = ""
-    password_error = ""
-    # date_error = ''
 
     # Handle form submission
     if request.POST:
         # Get values
         has_errors = False
-        # filename = request.POST.get('filename', None)
         resourcein = request.POST.get("resourcein", None)
         username = request.POST.get("username", None)
         password = request.POST.get("password", None)
-
-        # Validate
-
-        if not resourcein:
-            has_errors = True
-            resourcein_error = "Resource ID is required."
 
         try:
             # pass in request object
             hs = get_oauth_hs(request)
 
         except Exception as e:
+            auth = HydroShareAuthBasic(username=username, password=password)
+            hs = HydroShare(auth=auth)
 
-            if not username:
-                has_errors = True
-                username_error = "Username is required."
+            try:
 
-            elif not password:
-                has_errors = True
-                password_error = "Password is required."
+                resourcefiles = hs.resource(resourcein).files.all()
+                status_code = resourcefiles.__dict__.get("status_code")
+                if status_code == 404:
+                    messages.error(
+                        request,
+                        f"No Files found for the resource id: {resourcein}",
+                    )
+                    return redirect("hydroshare_python:getfile_metadata")
+                else:
+                    return HttpResponse(resourcefiles.content)
 
-            else:
-                auth = HydroShareAuthBasic(username=username, password=password)
-                hs = HydroShare(auth=auth)
+            # resource id is invalid
+            except HydroShareNotAuthorized as e:
+                print("here")
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+                return redirect("hydroshare_python:getfile_metadata")
 
-        # if not river:
-        #     has_errors = True
-        #     river_error = 'River is required.'
+            # authetication is invalid
+            except HydroShareHTTPException as e:
+                print("here22")
 
-        if not has_errors:
-            # Do stuff here
-            # auth = HydroShareAuthBasic(username= username, password= password)
-            # hs = HydroShare(auth=auth)
-            resourcefiles = hs.resource(resourcein).files.all().content
-            return HttpResponse(resourcefiles)
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
+                return redirect("hydroshare_python:getfile_metadata")
 
-        return HttpResponse("")
+        # return HttpResponse("")
 
 
 @controller
@@ -1626,9 +1618,6 @@ def getfile_metadata(request):
     password = ""
     resourcein = ""
     filev = []
-    # owner = 'Reclamation'
-    # river = ''
-    # date_built = ''
 
     # Errors
     title_error = ""
@@ -1645,7 +1634,6 @@ def getfile_metadata(request):
     except Exception as e:
         pass
         # handle exceptions
-    # date_error = ''
 
     # Handle form submission
     if request.POST:
@@ -1671,10 +1659,6 @@ def getfile_metadata(request):
             # pass in request object
             hs = get_oauth_hs(request)
 
-        # # your logic goes here. For example: list all HydroShare resources
-        #     for resource in hs.getResourceList():
-        #         print(resource)
-
         except Exception as e:
             # handle exceptions
 
@@ -1690,36 +1674,47 @@ def getfile_metadata(request):
                 auth = HydroShareAuthBasic(username=username, password=password)
                 hs = HydroShare(auth=auth)
 
-        # if not river:
-        #     has_errors = True
-        #     river_error = 'River is required.'
-
         if not has_errors:
             # Do stuff here
-            # auth = HydroShareAuthBasic(username= username, password= password)
-            # hs = HydroShare(auth=auth)
-            response = hs.resource(resourcein).files.metadata(title).content
+            try:
+                response = hs.resource(resourcein).files.metadata(title).content
 
-            # response_serialized = serializers.serialize('json', response)
+            # resource id is invalid
+            except HydroShareNotAuthorized as e:
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+            # authetication is invalid
+            except HydroShareHTTPException as e:
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
 
             return HttpResponse(response.decode("utf-8"))
-            # return JsonResponse(response_serialized, safe=False)
 
         if has_errors:
             # Utah Municipal resource id
             messages.error(request, "Please fix errors.")
 
     # Define form gizmos
-    resourcein_input = TextInput(display_text="Resource ID", name="resourcein")
+    resourcein_input = TextInput(
+        display_text="Resource ID", name="resourcein", error=resourcein_error
+    )
 
     title_input = TextInput(
         display_text="Name of the file you want to download including the extension",
         name="title",
         placeholder="eg: filename.shp or filename.txt",
+        error=title_error,
     )
 
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -1727,6 +1722,7 @@ def getfile_metadata(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
 
     add_button = Button(

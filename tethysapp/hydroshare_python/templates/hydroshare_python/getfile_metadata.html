@@ -3,6 +3,9 @@
 {% load static %}
 
 {% block app_content %}
+{% if messages %}<ul>{% for message in messages %}
+  <li>{{ message }}</li>
+{% endfor %}</ul>{% endif %}
 <h1 style="color:rgb(16, 73, 14)">Get science Metadata</h1>
 
 <p>The metadata sometimes proves to be very useful for a geo-spatial designer. HydroShare has a way of displaying this specific type of metadata. The metadata provides a lot of information like the spatial coverage of a shapefile, the units used, projection of the file and so on.</p>
@@ -25,7 +28,8 @@
     <p>The resource Id is a unique identifier for every resource on Hydroshare. You can findit by browsing to your HydroShare resource copying the ID from the URL. Like for example, this is an example hyperlink https://www.hydroshare.org/resource/08c6e88adaa647cd9bb28e5d619178e0/ from which the 32 letter combination at the end is called the resource id. And so the resource id from the example hyperlink is <mark>08c6e88adaa647cd9bb28e5d619178e0</mark> </p>
     <img src="{% static 'hydroshare_python/images/resourceid.jpeg'%}" alt="Resource ID" height="30">
     {% gizmo resourcein_input %}
-    <button type="button" id="fetchfile">Find files</button>
+    <p></p>
+    <button class='btn btn-success' type="button" id="fetchfile">Find files</button>
     <p></p>
   <h3>Step 2: Choose a file to get its metadata</h3>
   <p></p>
@@ -37,21 +41,20 @@
 
   </form>
   <p></p>
-  
+  <input type="hidden" id="filev-url" data-url="{% url 'hydroshare_python:filev' %}" />
 <h4>Learn more:</h4>
 <p>To try this on your own, you can use the code snippet below, or download the full javascript file that is used in this demonstration</p>
 
 <p></p>
     <pre class="line-numbers">
       <code class="language-python">
-<mark>from hs_restclient import HydroShare, HydroShareAuthBasic</mark>
-auth = HydroShareAuthBasic(username='myusername', password='mypassword')
-hs = HydroShare(auth=auth)
-science_metadata_json = hs.getScienceMetadata('ID OF RESOURCE GOES HERE')
+      <mark>from hs_restclient import HydroShare, HydroShareAuthBasic</mark>
+      auth = HydroShareAuthBasic(username='myusername', password='mypassword')
+      hs = HydroShare(auth=auth)
+      science_metadata_json = hs.getScienceMetadata('ID OF RESOURCE GOES HERE')
       </code>
     </pre>
 
-  <button id="jsfile"><a id="jsfile" href="{% static 'hydroshare_python/js/getfilemetadata.js'%}" download>Download javaScript file</a></button>
 {% endblock %}
 
 {% block app_actions %}
