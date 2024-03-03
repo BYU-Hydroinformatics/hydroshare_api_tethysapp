@@ -2239,20 +2239,30 @@ def download_resource(request):
                 hs = HydroShare(auth=auth)
 
         if not has_errors:
-
-            fpath = "/tmp/%s.zip" % title
-            hs.getResource(title, destination="/tmp")
-            wrapper = FileWrapper(open(os.path.abspath(fpath), "rb"))
-            response = HttpResponse(wrapper, content_type="text/plain")
-            response["Content-Disposition"] = (
-                "attachment; filename=%s" % os.path.basename(fpath)
-            )
-            response["Content-Length"] = os.path.getsize(fpath)
-            return response
-            # hs.setAccessRules(public=True)
+            try:
+                fpath = "/tmp/%s.zip" % title
+                hs.getResource(title, destination="/tmp")
+                wrapper = FileWrapper(open(os.path.abspath(fpath), "rb"))
+                response = HttpResponse(wrapper, content_type="text/plain")
+                response["Content-Disposition"] = (
+                    "attachment; filename=%s" % os.path.basename(fpath)
+                )
+                response["Content-Length"] = os.path.getsize(fpath)
+                return response
+            except HydroShareNotAuthorized as e:
+                has_errors = True
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+            except HydroShareHTTPException as e:
+                has_errors = True
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
 
         if has_errors:
-            # Utah Municipal resource id
             messages.error(request, "Please fix errors.")
 
     # Define form gizmos
@@ -2260,10 +2270,14 @@ def download_resource(request):
         display_text="Enter your resource ID of the Resource",
         name="title",
         placeholder="Ex: decbdccf486d4df4b1d18031a4e63aa3",
+        error=title_error,
     )
 
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -2271,13 +2285,8 @@ def download_resource(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
-
-    # river_input = TextInput(
-    #     display_text='Name of Creator',
-    #     name='river',
-    #     placeholder='e.g: John Smith'
-    # )
 
     download_button = Button(
         display_text="Download",

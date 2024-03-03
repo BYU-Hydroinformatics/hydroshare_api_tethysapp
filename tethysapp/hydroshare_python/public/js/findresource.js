@@ -11,12 +11,13 @@ button.addEventListener('click', async function () {
     formData.append('password', password && password.value);
     formData.append('viewr', viewr.value);
     formData.append('csrfmiddlewaretoken', csrfToken.value);
+    const viewer_url = document.getElementById('viewer-url').getAttribute("data-url");
 
 
     document.body.classList.add('waiting');
     let responseData;
     try{
-        const response = await fetch('.', {
+        const response = await fetch(viewer_url, {
             method: 'post',
             body: formData
         });
