@@ -1184,20 +1184,12 @@ def delete_resource(request):
     # Default Values
     username = ""
     password = ""
-    # filename = ''
     resourcein = ""
-    # owner = 'Reclamation'
-    # river = ''
-    # date_built = ''
 
     # Errors
     username_error = ""
     password_error = ""
-    # filename_error = ''
     resourcein_error = ""
-    # owner_error = ''
-    # river_error = ''
-    # date_error = ''
     loggedin = False
     try:
         # pass in request object
@@ -1225,13 +1217,7 @@ def delete_resource(request):
         try:
             # pass in request object
             hs = get_oauth_hs(request)
-
-            # your logic goes here. For example: list all HydroShare resources
-            # for resource in hs.getResourceList():
-            #     print(resource)
-
         except Exception as e:
-            # handle exceptions
 
             if not username:
                 has_errors = True
@@ -1244,14 +1230,24 @@ def delete_resource(request):
             else:
                 auth = HydroShareAuthBasic(username=username, password=password)
                 hs = HydroShare(auth=auth)
-        # if not river:
-        #     has_errors = True
-        #     river_error = 'River is required.'
 
         if not has_errors:
             # Do stuff here
-            hs.deleteResource(resourcein)
-            messages.success(request, "Resource deleted successfully")
+            try:
+                hs.deleteResource(resourcein)
+                messages.success(request, "Resource deleted successfully")
+            except HydroShareNotAuthorized as e:
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+
+            # authetication is invalid
+            except HydroShareHTTPException as e:
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
         if has_errors:
             messages.error(request, "Please fix errors.")
 
@@ -1260,10 +1256,14 @@ def delete_resource(request):
         display_text="Resource ID",
         name="resourcein",
         placeholder="Enter the Resource ID here",
+        error=resourcein_error,
     )
 
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -1271,6 +1271,7 @@ def delete_resource(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
 
     delete_button = Button(
