@@ -7,6 +7,7 @@ button.addEventListener('click', async function () {
     const resourceid = document.getElementById('resourcein')
     const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]')
     const fileSelector = document.getElementById('title_input')
+    const filev_url = document.getElementById('filev-url').getAttribute("data-url");
 
     const formData = new FormData();
     formData.append('username', username && username.value);
@@ -17,14 +18,14 @@ button.addEventListener('click', async function () {
     document.body.classList.add('waiting');
     let responseData;
     try{
-    const response = await fetch('.', {
+    const response = await fetch(filev_url, {
         method: 'post',
         body: formData
     });
 
     responseData = await response.json()
     } catch{
-
+        return
     }finally{
         document.body.classList.remove('waiting');
     }

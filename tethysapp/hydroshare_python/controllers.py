@@ -1513,18 +1513,13 @@ def delete_file(request):
     """
     # Default Values
     title = ""
-    # filename = ''
     username = ""
     password = ""
     resourcein = ""
     filev = []
-    # owner = 'Reclamation'
-    # river = ''
-    # date_built = ''
 
     # Errors
     title_error = ""
-    # filename_error = ''
     resourcein_error = ""
     username_error = ""
     password_error = ""
@@ -1543,29 +1538,20 @@ def delete_file(request):
     if request.POST and "delete-button" in request.POST:
         # Get values
         has_errors = False
-        # filename = request.POST.get('filename', None)
         resourcein = request.POST.get("resourcein", None)
         title = request.POST.get("title_input", None)
         username = request.POST.get("username", None)
         password = request.POST.get("password", None)
 
         # Validate
-
         if not resourcein:
             has_errors = True
             resourcein_error = "Resource ID is required."
 
         try:
-            # pass in request object
             hs = get_oauth_hs(request)
 
-            # your logic goes here. For example: list all HydroShare resources
-            # for resource in hs.getResourceList():
-            #     print(resource)
-
         except Exception as e:
-            # handle exceptions
-
             if not username:
                 has_errors = True
                 username_error = "Username is required."
@@ -1578,16 +1564,22 @@ def delete_file(request):
                 auth = HydroShareAuthBasic(username=username, password=password)
                 hs = HydroShare(auth=auth)
 
-        # if not river:
-        #     has_errors = True
-        #     river_error = 'River is required.'
-
         if not has_errors:
-            # Do stuff here
-            # auth = HydroShareAuthBasic(username= username, password= password)
-            # hs = HydroShare(auth=auth)
-            resource_id = hs.deleteResourceFile(resourcein, title)
-            messages.success(request, "File deleted successfully")
+            try:
+                hs.deleteResourceFile(resourcein, title)
+                messages.success(request, "File deleted successfully")
+            # resource id is invalid
+            except HydroShareNotAuthorized as e:
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+            # authetication is invalid
+            except HydroShareHTTPException as e:
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
         if has_errors:
             # Utah Municipal resource id
             messages.error(request, "Please fix errors.")
@@ -1597,10 +1589,14 @@ def delete_file(request):
         display_text="Resource ID",
         name="resourcein",
         placeholder="Enter the Resource ID here",
+        error=resourcein_error,
     )
 
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -1608,6 +1604,7 @@ def delete_file(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
 
     delete_button = Button(
@@ -1710,6 +1707,8 @@ def getfile_metadata(request):
             # Do stuff here
             try:
                 response = hs.resource(resourcein).files.metadata(title).content
+                messages.success(request, "Success")
+                return HttpResponse(response.decode("utf-8"))
 
             # resource id is invalid
             except HydroShareNotAuthorized as e:
@@ -1723,8 +1722,6 @@ def getfile_metadata(request):
                     request,
                     f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
                 )
-
-            return HttpResponse(response.decode("utf-8"))
 
         if has_errors:
             # Utah Municipal resource id

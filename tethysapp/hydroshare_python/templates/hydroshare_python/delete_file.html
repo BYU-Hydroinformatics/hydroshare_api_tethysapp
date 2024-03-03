@@ -25,15 +25,22 @@
     {% endif %}
     <p></p>
     <p>The resource Id is a unique identifier for every resource on Hydroshare. You can findit by browsing to your HydroShare resource copying the ID from the URL. Like for example, this is an example hyperlink https://www.hydroshare.org/resource/08c6e88adaa647cd9bb28e5d619178e0/ from which the 32 letter combination at the end is called the resource id. And so the resource id from the example hyperlink is <mark>08c6e88adaa647cd9bb28e5d619178e0</mark> </p>
-    <img src="{% static 'hydroshare_python/images/resourceid.jpeg'%}" alt="Resource ID" height="30">
+    <div>
+      <img src="{% static 'hydroshare_python/images/resourceid.jpeg'%}" alt="Resource ID" height="30">
+      <p></p>
+
+    </div>
     {% gizmo resourcein_input %}
-    <button type="button" id="fetchfile">Find files</button>
+    <p></p>
+    <button class="btn btn-success" type="button" id="fetchfile">Find files</button>
     <p></p>
   <h3>Step 2: Choose a file in the resource and delete it:</h3>  
-    <select name="title_input" id="title_input">
+    <select class="form-select" name="title_input" id="title_input">
         <option>Select a file</option>
     </select>
   </form>
+  <input type="hidden" id="filev-url" data-url="{% url 'hydroshare_python:filev' %}" />
+
 <p></p>
 {% gizmo delete_button %}
 <p></p>
@@ -44,14 +51,14 @@
 <p></p>
     <pre class="line-numbers">
       <code class="language-python">
-<mark>from hs_restclient import HydroShare, HydroShareAuthBasic</mark>
-auth = HydroShareAuthBasic(username='myusername', password='mypassword')
-hs = HydroShare(auth=auth)
-fname = 'somefile.txt'
-resource_id = hs.deleteResourceFile('ID OF RESOURCE GOES HERE', fname)
+        <mark>from hs_restclient import HydroShare, HydroShareAuthBasic</mark>
+        auth = HydroShareAuthBasic(username='myusername', password='mypassword')
+        hs = HydroShare(auth=auth)
+        fname = 'somefile.txt'
+        resource_id = hs.deleteResourceFile('ID OF RESOURCE GOES HERE', fname)
       </code>
     </pre>
-<button id="jsfile"><a id="jsfile" href="{% static 'hydroshare_python/js/second.js'%}" download>Download javaScript file</a></button>
+<!-- <button id="jsfile"><a id="jsfile" href="{% static 'hydroshare_python/js/second.js'%}" download>Download javaScript file</a></button> -->
 <p></p>
     
     
