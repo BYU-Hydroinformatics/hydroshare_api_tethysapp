@@ -859,7 +859,7 @@ def get_file(request):
                 authorsObj + separator + '{"creator":{"name":"' + author.strip() + '"}}'
             )
         title = request.POST.get("title", None)
-        print(dict(request.FILES))
+
         uploaded_file = request.FILES["uploadedfile"]
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_zip_path = os.path.join(temp_dir, uploaded_file.name)
@@ -937,6 +937,19 @@ def get_file(request):
                     )
                     messages.success(request, "Resource created successfully")
 
+                except HydroShareNotAuthorized as e:
+                    messages.error(
+                        request,
+                        f"{e}",
+                    )
+
+                # authetication is invalid
+                except HydroShareHTTPException as e:
+                    messages.error(
+                        request,
+                        f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    )
+
                 except Exception as e:
                     messages.error(request, f"{e}")
                 # return {"status": success }
@@ -949,16 +962,21 @@ def get_file(request):
         display_text="Title",
         name="title",
         placeholder="Enter the name of your resource",
+        error=title_error,
     )
 
     owner_input = TextInput(
         display_text="Keywords",
         name="owner",
         placeholder="eg: shapefiles, datasets, etc..",
+        error=owner_error,
     )
 
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -966,18 +984,21 @@ def get_file(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
 
     date_built = TextInput(
         display_text="Abstract",
         name="date-built",
         placeholder="Type in your abstract here",
+        error=date_error,
     )
 
     author_input = TextInput(
         display_text="Author/Co-authors",
         name="author",
         placeholder="Enter the name of the Author and Co-authors",
+        error=author_error,
     )
 
     create_button = Button(
@@ -1332,22 +1353,16 @@ def download_file(request):
     """
     # Default Values
     title = ""
-    # filename = ''
     username = ""
     password = ""
     resourcein = ""
     filev = []
-    # owner = 'Reclamation'
-    # river = ''
-    # date_built = ''
 
     # Errors
     title_error = ""
-    # filename_error = ''
     resourcein_error = ""
     username_error = ""
     password_error = ""
-    # date_error = ''
     loggedin = False
     try:
         # pass in request object
@@ -1361,14 +1376,12 @@ def download_file(request):
     if request.POST and "download-button" in request.POST:
         # Get values
         has_errors = False
-        # filename = request.POST.get('filename', None)
         resourcein = request.POST.get("resourcein", None)
         title = request.POST.get("title_input", None)
         username = request.POST.get("username", None)
         password = request.POST.get("password", None)
 
         # Validate
-
         if not resourcein:
             has_errors = True
             resourcein_error = "Resource ID is required."
@@ -1381,12 +1394,7 @@ def download_file(request):
             # pass in request object
             hs = get_oauth_hs(request)
 
-            # your logic goes here. For example: list all HydroShare resources
-            # for resource in hs.getResourceList():
-            #     print(resource)
-
         except Exception as e:
-            # handle exceptions
 
             if not username:
                 has_errors = True
@@ -1400,50 +1408,56 @@ def download_file(request):
                 auth = HydroShareAuthBasic(username=username, password=password)
                 hs = HydroShare(auth=auth)
 
-        # if not river:
-        #     has_errors = True
-        #     river_error = 'River is required.'
-
         if not has_errors:
             # Do stuff here
-            # auth = HydroShareAuthBasic(username= username, password= password)
-            # hs = HydroShare(auth=auth)
-            fname = title
-            fpath = hs.getResourceFile(resourcein, fname, destination="/tmp")
-            # response = HttpResponse( content_type='application/force-download')
-            # response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(fname)
-            # response['X-Sendfile'] = smart_str('/tmp')
-            # return response
-            fpath = "/tmp/%s" % title
-            # hs.getResource(title, destination='/tmp')
-            # response = HttpResponse( content_type='application/force-download')
-            # response['Content-Disposition'] = 'attachment; filename=%s.zip' % smart_str(title)
-            # response['X-Sendfile'] = smart_str('/tmp')
-            # response['Content-Length'] = os.path.getsize(fpath)
-            # print(os.path.getsize(fpath))
+            try:
+                fname = title
 
-            wrapper = FileWrapper(open(os.path.abspath(fpath), "rb"))
-            response = HttpResponse(wrapper, content_type="text/plain")
-            response["Content-Disposition"] = (
-                "attachment; filename=%s" % os.path.basename(fpath)
-            )
-            response["Content-Length"] = os.path.getsize(fpath)
-            return response
+                fpath = hs.getResourceFile(resourcein, fname, destination="/tmp")
+
+                fpath = "/tmp/%s" % title
+
+                wrapper = FileWrapper(open(os.path.abspath(fpath), "rb"))
+                response = HttpResponse(wrapper, content_type="text/plain")
+                response["Content-Disposition"] = (
+                    "attachment; filename=%s" % os.path.basename(fpath)
+                )
+                response["Content-Length"] = os.path.getsize(fpath)
+                return response
+                # resource id is invalid
+
+            except HydroShareNotAuthorized as e:
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+
+            # authetication is invalid
+            except HydroShareHTTPException as e:
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
         if has_errors:
-            # Utah Municipal resource id
             messages.error(request, "Please fix errors.")
 
     # Define form gizmos
-    resourcein_input = TextInput(display_text="Resource ID", name="resourcein")
+    resourcein_input = TextInput(
+        display_text="Resource ID", name="resourcein", error=resourcein_error
+    )
 
     title_input = TextInput(
         display_text="Name of the file you want to download including the extension",
         name="title",
         placeholder="eg: filename.shp or filename.txt",
+        error=title_error,
     )
 
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -1451,6 +1465,7 @@ def download_file(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
 
     add_button = Button(
@@ -2070,17 +2085,13 @@ def viewer(request):
         viewr = request.POST.get("viewr", None)
 
         # Validate
-        #
+
         if not viewr:
             has_errors = True
             viewr_error = "Subject is required."
         try:
             # pass in request object
             hs = get_oauth_hs(request)
-
-        # # your logic goes here. For example: list all HydroShare resources
-        #     for resource in hs.getResourceList():
-        #         print(resource)
 
         except Exception as e:
             # handle exceptions
@@ -2098,17 +2109,30 @@ def viewer(request):
 
         if not has_errors:
             # Do stuff here
+            try:
+                result = hs.resources(subject=viewr)
 
-            result = hs.resources(subject=viewr)
+                resourceList = []
+                for resource in result:
+                    resourceList.append(resource)
 
-            resourceList = []
-            for resource in result:
-                resourceList.append(resource)
+                return HttpResponse(json.dumps(resourceList))
 
-            return HttpResponse(json.dumps(resourceList))
+            # resource id is invalid
+            except HydroShareNotAuthorized as e:
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+
+            # authetication is invalid
+            except HydroShareHTTPException as e:
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
 
         if has_errors:
-            print("hey")
             messages.error(request, "Please fix errors.")
 
     username_input = TextInput(

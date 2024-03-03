@@ -16,15 +16,18 @@ button.addEventListener('click', async function () {
 
     document.body.classList.add('waiting');
     let responseData;
+    const filev_url = document.getElementById('filev-url').getAttribute("data-url");
+
     try{
-    const response = await fetch('.', {
-        method: 'post',
-        body: formData
-    });
+        const response = await fetch(filev_url, {
+            method: 'post',
+            body: formData
+        });
 
-    responseData = await response.json()
-    } catch{
-
+        responseData = await response.json()
+    } catch(err){
+        console.log(err)
+        return
     }finally{
         document.body.classList.remove('waiting');
     }

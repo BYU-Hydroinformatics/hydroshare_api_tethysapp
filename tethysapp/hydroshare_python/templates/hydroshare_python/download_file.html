@@ -26,11 +26,12 @@
     <img src="{% static 'hydroshare_python/images/resourceid.jpeg'%}" alt="Resource ID" height="30">
     <p></p>
     {% gizmo resourcein_input %}
-    <button type="button" id="fetchfile">Find files</button>
+    <p></p>
+    <button class="btn btn-success" type="button" id="fetchfile">Find files</button>
     <p></p>
   <h3>Step 2: Choose a File in the Resource and Download it:</h3>
   <p></p>
-    <select name="title_input" id="title_input">
+    <select class="form-select"  name="title_input" id="title_input">
       <option>Select a file</option>
     </select>
     <p></p>
@@ -38,6 +39,7 @@
 
   </form>
   <p></p>
+  <input type="hidden" id="filev-url" data-url="{% url 'hydroshare_python:filev' %}" />
   
 <h4>Learn more:</h4>
 <p>To try this on your own, you can use the code snippet below, or download the full javascript file that is used in this demonstration</p>
@@ -45,15 +47,15 @@
 <p></p>
     <pre class="line-numbers">
       <code class="language-python">
-<mark>from hs_restclient import HydroShare, HydroShareAuthBasic</mark>
-auth = HydroShareAuthBasic(username='myusername', password='mypassword')
-hs = HydroShare(auth=auth)
-fname = 'somefile.txt'
-fpath = hs.getResourceFile('ID OF RESOURCE GOES HERE', fname, destination='/directory/to/download/file/to')
+        <mark>from hs_restclient import HydroShare, HydroShareAuthBasic</mark>
+        auth = HydroShareAuthBasic(username='myusername', password='mypassword')
+        hs = HydroShare(auth=auth)
+        fname = 'somefile.txt'
+        fpath = hs.getResourceFile('ID OF RESOURCE GOES HERE', fname, destination='/directory/to/download/file/to')
       </code>
     </pre>
 
-  <button id="jsfile"><a id="jsfile" href="{% static 'hydroshare_python/js/downloadfile.js'%}" download>Download javaScript file</a></button>
+  <!-- <button id="jsfile"><a id="jsfile" href="{% static 'hydroshare_python/js/downloadfile.js'%}" download>Download javaScript file</a></button> -->
 {% endblock %}
 
 {% block app_actions %}
