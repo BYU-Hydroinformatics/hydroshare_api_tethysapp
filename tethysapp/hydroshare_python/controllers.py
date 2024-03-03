@@ -2361,12 +2361,7 @@ def create_folder(request):
             # pass in request object
             hs = get_oauth_hs(request)
 
-        # # your logic goes here. For example: list all HydroShare resources
-        #     for resource in hs.getResourceList():
-        #         print(resource)
-
         except Exception as e:
-            # handle exceptions
 
             if not username:
                 has_errors = True
@@ -2385,20 +2380,29 @@ def create_folder(request):
             foldername_error = "Folder name is required."
 
         if not has_errors:
-            # Do stuff here
-            # auth = HydroShareAuthBasic(username= username, password= password)
-            # hs = HydroShare(auth=auth)
-            folder_to_create = foldername
-            response_json = hs.createResourceFolder(
-                resourcein, pathname=folder_to_create
-            )
-            messages.success(request, "Folder created successfully")
+            try:
+                folder_to_create = foldername
+                hs.createResourceFolder(resourcein, pathname=folder_to_create)
+                messages.success(request, "Folder created successfully")
+            except HydroShareNotAuthorized as e:
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+            except HydroShareHTTPException as e:
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
         if has_errors:
             messages.error(request, "Please fix errors.")
 
     # Define form gizmos
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -2406,18 +2410,21 @@ def create_folder(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
 
     foldername_input = TextInput(
         display_text="Name of the Folder",
         name="foldername",
         placeholder="Enter the name of the folder",
+        error=foldername_error,
     )
 
     resourcein_input = TextInput(
         display_text="Resource ID",
         name="resourcein",
         placeholder="Enter the Resource ID",
+        error=resourcein_error,
     )
 
     create_button = Button(
@@ -2494,12 +2501,7 @@ def deletefolder(request):
             # pass in request object
             hs = get_oauth_hs(request)
 
-        # your logic goes here. For example: list all HydroShare resources
-        # for resource in hs.getResourceList():
-        #     print(resource)
-
         except Exception as e:
-            # handle exceptions
 
             if not username:
                 has_errors = True
@@ -2518,20 +2520,29 @@ def deletefolder(request):
             foldername_error = "Folder name is required."
 
         if not has_errors:
-            # Do stuff here
-            # auth = HydroShareAuthBasic(username= username, password= password)
-            # hs = HydroShare(auth=auth)
-            folder_to_create = foldername
-            response_json = hs.deleteResourceFolder(
-                resourcein, pathname=folder_to_create
-            )
-            messages.success(request, "Folder deleted successfully")
+            try:
+                folder_to_create = foldername
+                hs.deleteResourceFolder(resourcein, pathname=folder_to_create)
+                messages.success(request, "Folder deleted successfully")
+            except HydroShareNotAuthorized as e:
+                messages.error(
+                    request,
+                    f"{e}",
+                )
+            except HydroShareHTTPException as e:
+                messages.error(
+                    request,
+                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                )
         if has_errors:
             messages.error(request, "Please fix errors.")
 
     # Define form gizmos
     username_input = TextInput(
-        display_text="Username", name="username", placeholder="Enter your username"
+        display_text="Username",
+        name="username",
+        placeholder="Enter your username",
+        error=username_error,
     )
 
     password_input = TextInput(
@@ -2539,18 +2550,21 @@ def deletefolder(request):
         name="password",
         attributes={"type": "password"},
         placeholder="Enter your password",
+        error=password_error,
     )
 
     foldername_input = TextInput(
         display_text="Name of the Folder",
         name="foldername",
         placeholder="Enter the name of the folder",
+        error=foldername_error,
     )
 
     resourcein_input = TextInput(
         display_text="Resource ID",
         name="resourcein",
         placeholder="Enter the Resource ID",
+        error=resourcein_error,
     )
 
     create_button = Button(
