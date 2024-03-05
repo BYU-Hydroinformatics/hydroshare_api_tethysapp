@@ -21,11 +21,12 @@ button.addEventListener('click', async function () {
             method: 'post',
             body: formData
         });
-        console.log(response)
+        // console.log(response)
         
         responseData = await response.json()
-        console.log(responseData)
+        // console.log(responseData)
     } catch(e){
+        // console.log(e)
         return
     
     }finally{

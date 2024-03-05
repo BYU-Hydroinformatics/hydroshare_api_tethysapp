@@ -397,7 +397,7 @@ def mapview(request):
             except HydroShareHTTPException as e:
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
 
         if has_errors:
@@ -476,9 +476,9 @@ def boundingbox(request):
         pass
 
     # Handle form submission
-    print("POST REQUEST RECEIVED")
+    # print("POST REQUEST RECEIVED")
     if request.POST and not "add-button" in request.POST:
-        print("POST REQUEST STARTED")
+        # print("POST REQUEST STARTED")
         # Get values
         has_errors = False
         username = request.POST.get("username", None)
@@ -599,7 +599,7 @@ def random(request):
     )
     hs = HydroShare(auth=auth)
     resource_md = hs.getSystemMetadata(resource)
-    print(resource_md)
+    # print(resource_md)
     # title = resource_md['title']
     bb1 = resource_md["coverages"][0]["value"]["northlimit"]
     bb2 = resource_md["coverages"][0]["value"]["eastlimit"]
@@ -607,7 +607,7 @@ def random(request):
     bb4 = resource_md["coverages"][0]["value"]["westlimit"]
     resourcefiles = hs.resource(resource).files.all().content
 
-    print(resourcefiles)
+    # print(resourcefiles)
 
     try:
 
@@ -673,9 +673,9 @@ def geoserver(request):
         pass
 
     # Handle form submission
-    print("POST REQUEST RECEIVED")
+    # print("POST REQUEST RECEIVED")
     if request.POST and not "add-button" in request.POST:
-        print("POST REQUEST STARTED")
+        # print("POST REQUEST STARTED")
         # Get values
         has_errors = False
         username = request.POST.get("username", None)
@@ -851,7 +851,7 @@ def get_file(request):
 
     # Handle form submission
     if request.POST and "create-button" in request.POST:
-        print(request.POST)
+        # print(request.POST)
         # Get values
         has_errors = False
         username = request.POST.get("username", None)
@@ -872,7 +872,7 @@ def get_file(request):
         uploaded_file = request.FILES["uploadedfile"]
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_zip_path = os.path.join(temp_dir, uploaded_file.name)
-            print(temp_zip_path)
+            # print(temp_zip_path)
 
             # Use with statements to ensure opened files are closed when done
             with open(temp_zip_path, "wb") as temp_zip:
@@ -956,7 +956,7 @@ def get_file(request):
                 except HydroShareHTTPException as e:
                     messages.error(
                         request,
-                        f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                        f"{e}",
                     )
 
                 except Exception as e:
@@ -1035,7 +1035,7 @@ def get_file(request):
         "create_button": create_button,
         "cancel_button": cancel_button,
     }
-    print(context)
+    # print(context)
 
     return render(request, "hydroshare_python/get_file.html", context)
 
@@ -1070,12 +1070,12 @@ def add_file(request):
         username = request.POST.get("username", None)
         password = request.POST.get("password", None)
         resourcein = request.POST.get("resourcein", None)
-        print(dict(request.FILES))
+        # print(dict(request.FILES))
         uploaded_file = request.FILES["addfile"]
 
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_zip_path = os.path.join(temp_dir, uploaded_file.name)
-            print(temp_zip_path)
+            # print(temp_zip_path)
 
             # Use with statements to ensure opened files are closed when done
             with open(temp_zip_path, "wb") as temp_zip:
@@ -1120,7 +1120,7 @@ def add_file(request):
                 except HydroShareHTTPException as e:
                     messages.error(
                         request,
-                        f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                        f"{e}",
                     )
 
             if has_errors:
@@ -1246,7 +1246,7 @@ def delete_resource(request):
             except HydroShareHTTPException as e:
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
         if has_errors:
             messages.error(request, "Please fix errors.")
@@ -1350,7 +1350,7 @@ def filev(request):
             except HydroShareHTTPException as e:
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
 
         return HttpResponse("")
@@ -1446,7 +1446,7 @@ def download_file(request):
             except HydroShareHTTPException as e:
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
         if has_errors:
             messages.error(request, "Please fix errors.")
@@ -1579,7 +1579,7 @@ def delete_file(request):
             except HydroShareHTTPException as e:
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
         if has_errors:
             # Utah Municipal resource id
@@ -1721,7 +1721,7 @@ def getfile_metadata(request):
             except HydroShareHTTPException as e:
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
 
         if has_errors:
@@ -1929,7 +1929,7 @@ def metadata(request):
             except HydroShareHTTPException as e:
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
 
         if has_errors:
@@ -2083,7 +2083,7 @@ def viewer(request):
 
     # Handle form submission
     if request.POST and not "fetch_button" in request.POST:
-        print("POST REQUEST STARTED")
+        # print("POST REQUEST STARTED")
         # Get values
         has_errors = False
         username = request.POST.get("username", None)
@@ -2118,30 +2118,34 @@ def viewer(request):
             # Do stuff here
             try:
                 result = hs.resources(subject=viewr)
-
                 resourceList = []
                 for resource in result:
                     resourceList.append(resource)
-
-                return HttpResponse(json.dumps(resourceList))
+                if len(resourceList) < 1:
+                    messages.error(
+                        request,
+                        f"No resources found for the subject: {viewr}",
+                    )
+                else:
+                    return HttpResponse(json.dumps(resourceList))
 
             # resource id is invalid
             except HydroShareNotAuthorized as e:
+                has_errors = True
                 messages.error(
                     request,
                     f"{e}",
                 )
-                # return redirect("hydroshare_python:viewer")
+
             # authetication is invalid
             except HydroShareHTTPException as e:
+                has_errors = True
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
-                # return redirect("hydroshare_python:viewer")
 
         if has_errors:
-            print("hey")
             messages.error(request, "Please fix errors.")
 
     username_input = TextInput(
@@ -2179,7 +2183,7 @@ def viewer(request):
         "viewr_input": viewr_input,
         "cancel_button": cancel_button,
     }
-
+    # print("rendering")
     return render(request, "hydroshare_python/find_resource.html", context)
 
 
@@ -2259,7 +2263,7 @@ def download_resource(request):
                 has_errors = True
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
 
         if has_errors:
@@ -2392,7 +2396,7 @@ def create_folder(request):
             except HydroShareHTTPException as e:
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
         if has_errors:
             messages.error(request, "Please fix errors.")
@@ -2532,7 +2536,7 @@ def deletefolder(request):
             except HydroShareHTTPException as e:
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
         if has_errors:
             messages.error(request, "Please fix errors.")
@@ -2662,7 +2666,7 @@ def change_public(request):
             except HydroShareHTTPException as e:
                 messages.error(
                     request,
-                    f"{json.loads(e.__dict__.get('status_msg','')).get('detail','No error')}",
+                    f"{e}",
                 )
         if has_errors:
             messages.error(request, "Please fix errors.")

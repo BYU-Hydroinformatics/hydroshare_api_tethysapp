@@ -26,7 +26,7 @@ button.addEventListener('click', async function () {
 
         responseData = await response.json()
     } catch(err){
-        console.log(err)
+        // console.log(err)
         return
     }finally{
         document.body.classList.remove('waiting');

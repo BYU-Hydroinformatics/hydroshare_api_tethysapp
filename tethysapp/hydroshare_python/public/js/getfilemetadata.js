@@ -3,7 +3,7 @@
 let button = document.getElementById('fetchfile')
 const fileSelector = document.getElementById('title_input')
 button.addEventListener('click', async function () {
-    console.log('Button clicked')
+    // console.log('Button clicked')
     const username = document.getElementById('username')
     const password = document.getElementById('password')
     const resourceid = document.getElementById('resourcein')
@@ -25,7 +25,7 @@ button.addEventListener('click', async function () {
  
     try{
         const responseData = await response.json();
-        console.log(responseData)
+        // console.log(responseData)
 
         var child = fileSelector.lastElementChild;
         while (child) {

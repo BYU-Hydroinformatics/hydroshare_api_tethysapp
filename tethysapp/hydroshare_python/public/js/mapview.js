@@ -80,7 +80,7 @@ viewbutton.addEventListener('click', function(event){
     if(resource){
         
         mymap.eachLayer(function (layer) {
-            console.log(layer)
+            // console.log(layer)
             if(!layer._url){
                 mymap.removeLayer(layer);
 

@@ -224,12 +224,12 @@ function updateFilter(){
         var url = source.getGetFeatureInfoUrl(
           evt.coordinate, viewResolution, view.getProjection(),
           {'INFO_FORMAT': 'text/html', 'FEATURE_COUNT': 50});
-          console.log(url)
+          // console.log(url)
         if (url) {
             const geoserver_table_url = document.getElementById('loading-geserver-table-url').getAttribute("data-url");
             const response = await fetch(`${geoserver_table_url}?url=${btoa(url)}`);
             const response_json = await response.json();
-            console.log(response_json)
+            // console.log(response_json)
             document.getElementById('nodelist').innerHTML =response_json['content'] ;
         }
       });
@@ -325,17 +325,17 @@ viewbutton.addEventListener('click', async function(event){
 
         // please convert to vanilla js the following
         const random_url = document.getElementById('random-url').getAttribute("data-url");
-        console.log(random_url)
+        // console.log(random_url)
         const response = await fetch(`${random_url}?id=${selectedid}`, {
             method: 'get'
         });
-        console.log(response)
+        // console.log(response)
         
         let responseData = await response.json()
         destroyMap()
         document.getElementById('wrapper-map').style.display = 'block'
         initMap(responseData.bb1, responseData.bb2, responseData.bb3, responseData.bb4, responseData.resourceid, responseData.title)
-        console.log(responseData)
+        // console.log(responseData)
 
     }
 })
