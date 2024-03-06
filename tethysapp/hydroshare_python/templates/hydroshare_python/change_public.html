@@ -29,6 +29,7 @@
     <img src="{% static 'hydroshare_python/images/resourceid.jpeg'%}" alt="Resource ID" height="30">
     <p></p>
   {% gizmo title_input %}
+  <p></p> 
   {% gizmo public_button %}
    
   </form>
@@ -36,15 +37,15 @@
   <p>To try this on your own, you can use the code snippet below, or download the full javascript file that is used in this demonstration.</p>
   <pre class="line-numbers">
     <code class="language-python">
-<mark>from hs_restclient import HydroShare, HydroShareAuthBasic</mark>
-auth = HydroShareAuthBasic(username='myusername', password='mypassword')
-hs = HydroShare(auth=auth)
-hs.setAccessRules('ID OF RESOURCE GOES HERE', public=True)
+      <mark>from hs_restclient import HydroShare, HydroShareAuthBasic</mark>
+      auth = HydroShareAuthBasic(username='myusername', password='mypassword')
+      hs = HydroShare(auth=auth)
+      hs.setAccessRules('ID OF RESOURCE GOES HERE', public=True)
 
     </code>
   </pre>
   <p></p>
-  <button id="jsfile"><a id="jsfile" href="{% static 'hydroshare_python/js/findresource.js'%}" download>Download javaScript file</a></button>
+  <!-- <button id="jsfile"><a id="jsfile" href="{% static 'hydroshare_python/js/findresource.js'%}" download>Download javaScript file</a></button> -->
 
 {% endblock %}
 
@@ -52,8 +53,5 @@ hs.setAccessRules('ID OF RESOURCE GOES HERE', public=True)
   
 {% endblock %}
 
-{% block scripts %}
-  {{ block.super }}
-  <script src="{% static 'hydroshare_python/js/findresource.js' %}" type="text/javascript"></script>
-  {% endblock %}
+
 

@@ -26,42 +26,46 @@ button.addEventListener('click', async function () {
     formData.append('password', password && password.value);
     formData.append('viewr', viewr.value);
     formData.append('csrfmiddlewaretoken', csrfToken.value);
+    try{
+        const response = await fetch('.', {
+            method: 'post',
+            body: formData
+        });
+        const responseData = await response.json()
+        resourceslist = responseData
 
-    const response = await fetch('/apps/hydroshare-python/mapview/', {
-        method: 'post',
-        body: formData
-    });
-
-    const responseData = await response.json()
-    resourceslist = responseData
-
-    var child = fileSelector.lastElementChild;
-    while (child) {
-        fileSelector.removeChild(child);
-        child = fileSelector.lastElementChild;
-    }
-    const filteredresource = responseData.filter(resource=>{
-        
-        if(!resource.coverages || resource.coverages.length==0){
-            return false
+        var child = fileSelector.lastElementChild;
+        while (child) {
+            fileSelector.removeChild(child);
+            child = fileSelector.lastElementChild;
         }
-        const box = resource.coverages.find(coveragesItem=>coveragesItem.type=="box")
-        if (box){return true}
-        return false
-    })
-    // Default option
-    const option = document.createElement('option');
-    option.textContent = filteredresource.length==0?"THE SUBJECT YOU SEARCHED FOR DOES NOT HAVE RESOURCES WITH A SHAPEFILE":"Select a Resource";
-    fileSelector.append(option)
-
-    // File name options
-        
-        filteredresource.forEach(result => {
+        const filteredresource = responseData.filter(resource=>{
+            
+            if(!resource.coverages || resource.coverages.length==0){
+                return false
+            }
+            const box = resource.coverages.find(coveragesItem=>coveragesItem.type=="box")
+            if (box){return true}
+            return false
+        })
+        // Default option
         const option = document.createElement('option');
-        option.value = result.resource_id;
-        option.textContent = result.resource_title;
+        option.textContent = filteredresource.length==0?"THE SUBJECT YOU SEARCHED FOR DOES NOT HAVE RESOURCES WITH A SHAPEFILE":"Select a Resource";
         fileSelector.append(option)
-    })
+
+        // File name options
+            
+            filteredresource.forEach(result => {
+            const option = document.createElement('option');
+            option.value = result.resource_id;
+            option.textContent = result.resource_title;
+            fileSelector.append(option)
+        })
+    }
+    catch(e){
+        return
+    }
+
 })
 fileSelector.addEventListener('change', function(event){
     const selected = document.querySelector('#selected_resource')
@@ -74,12 +78,20 @@ viewbutton.addEventListener('click', function(event){
     const selectedid = fileSelector.value
     const resource = resourceslist.find(resource=>resource.resource_id==selectedid)
     if(resource){
-        console.log("Map works")
+        
+        mymap.eachLayer(function (layer) {
+            // console.log(layer)
+            if(!layer._url){
+                mymap.removeLayer(layer);
+
+            }
+        });
+        
         const box = resource.coverages.find(coveragesItem=>coveragesItem.type=="box")
         var bounds = [[box.value.northlimit, box.value.westlimit], [box.value.southlimit, box.value.eastlimit]];
-// create an orange rectangle
+        // create an orange rectangle
         L.rectangle(bounds, {color: "#ff7800", weight: 3}).addTo(mymap);
-// zoom the map to the rectangle bounds
+        // zoom the map to the rectangle bounds
         mymap.fitBounds(bounds);
     }
 })

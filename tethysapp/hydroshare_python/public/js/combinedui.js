@@ -17,7 +17,7 @@ button.addEventListener('click', async function () {
     document.body.classList.add('waiting');
     let responseData;
     try{
-    const response = await fetch('/apps/hydroshare-python/filev/', {
+    const response = await fetch('.', {
         method: 'post',
         body: formData
     });

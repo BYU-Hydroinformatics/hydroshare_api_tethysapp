@@ -25,13 +25,13 @@
     <p></p>
     <p></p>
     <h3>Step 2: Type in your subject of the resource you are looking for</h3> 
-  <input id="viewr" type="text" name="viewr_input">
+    <input class="form-control" id="viewr" type="text" name="viewr_input">
     <p></p>
   <h3>Step 3: Browse for the resource you are looking for</h3>  
-  <button type="button" id="fetchfile">Find Resources</button>
+  <button class="btn btn-success" type="button" id="fetchfile">Find Resources</button>
   <p></p>
   <p>The resources related to the subject, mentioned above, will appear in the scroll below. Depending on the number of the resources with respect to the subject in HydroShare, it could take a couple seconds to a few minutes.</p>
-    <select name="title" id="title_input">
+    <select class="form-select" name="title" id="title_input">
 
         <option>Select the Resource</option>
     </select>
@@ -47,6 +47,7 @@
 
   </form>
   <p></p>
+  <input type="hidden" id="viewer-url" data-url="{% url 'hydroshare_python:viewer' %}" />
  
   <h4>Learn more:</h4>
   <p>To try this on your own, you can use the code snippet below that is used in this demonstration.</p>
